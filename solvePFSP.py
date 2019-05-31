@@ -17,6 +17,27 @@ heuristic = []
 probability = []
 colony = []
 
+tours = 0;
+iterations = 0;
+
+def printHelp():
+	global initial_pheromone
+	helpString = """	ACO Usage:
+		./aco --ants <int> --alpha <float> --beta <float> --rho <float> --tours <int> --iterations <int> --seed <int> --instance <path>
+		Example: ./aco --tours 2000 --seed 123 --instance eil151.tsp
+	ACO flags:
+		--ants: Number of ants to build every iteration. Default=10.
+		--alpha: Alpha parameter (float). Default=1.
+		--beta: Beta parameter (float). Default=1.
+		--rho: Rho parameter (float). Defaut=0.2.
+		--tours: Maximum number of tours to build (integer). Default=10000.
+		--iterations: Maximum number of iterations to perform (interger). Default:0 (disabled).
+		--seed: Number for the random seed generator.
+		--instance: Path to the instance file
+	ACO other parameters:
+		initial pheromone: """
+	helpString += str(initial_pheromone)
+	print(helpString)
 
 def readArguments():
 	global n_ants,alpha,beta,rho, max_iterations, max_tours, seed, fileName
@@ -47,6 +68,9 @@ def readArguments():
 		elif(sys.argv[i] == "--instance"):
 			fileName = sys.argv[i+1]
 			i += 1
+		elif(sys.argv[i] == "--help"):
+			printHelp()
+			retVal = False
 		else:
 			print("Parameter ", sys.argv[i], " not recognized")
 			retVal = False
@@ -93,9 +117,17 @@ def createColony():
 	for i in range (n_ants):
 		colony.append(Ant(PFSPobj, probability, seed))
 
+def terminationCondition():
+	res = False
+	if(max_tours != 0 and tours > max_tours):
+		res = True
+	if(max_iterations !=0 and iterations >= max_iterations):
+		res = True
+	return res
+
 
 def main() :
-	global PFSPobj, initial_pheromone
+	global PFSPobj, initial_pheromone,probability,colony, tours, iterations
 	if(readArguments()):
 		PFSPobj = PFSP(fileName)
 		initializePheromone(initial_pheromone)
@@ -103,6 +135,15 @@ def main() :
 		initializeProbabilities()
 		calculateProbability()
 		createColony()
+		while(terminationCondition() == False):
+			for i in range (n_ants):
+				colony[i].search()
+
+				tours += 1
+
+		iterations += 1
+
+
 
 
 if __name__ == "__main__":
