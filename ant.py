@@ -7,4 +7,7 @@ class Ant(object):
 		self.probability = probability
 		
 	def search(self):
-		print("coucou")
+		print("I'm searching")
+
+	def getTardiness(self):
+		print("Best tardi")
