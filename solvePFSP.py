@@ -1,5 +1,6 @@
 import sys
 from PFSP import PFSP
+from ant import Ant
 
 fileName = "PFSP_instances/DD_Ta051.txt"
 alpha=1.0
@@ -12,6 +13,9 @@ seed = 0
 initial_pheromone = 1.0
 PFSPobj = None
 pheromone = []
+heuristic = []
+probability = []
+colony = []
 
 
 def readArguments():
@@ -54,13 +58,40 @@ def initializePheromone(initial_pheromone):
 	N = PFSPobj.getNumJobs()
 	listPheromone = [initial_pheromone] * N
 	for i in range (N):
-		listPheromone[i] = 0
+		listPheromone[i] = 0.0
 		pheromone.append(listPheromone.copy())
 		listPheromone[i] = initial_pheromone
 
+def initializeHeuristic():
+	global PFSPobj, heuristic
+	N = PFSPobj.getNumJobs()
+	listHeuristic = [1.0] * N
+	for i in range (N):
+		listHeuristic[i] = 0.0
+		heuristic.append(listHeuristic.copy())
+		listHeuristic[i] = 1.0
 
+def initializeProbabilities():
+	global PFSPobj, probability
+	N = PFSPobj.getNumJobs()
+	listProb = [0.0] * N
+	for i in range(N):
+		probability.append(listProb.copy())
 
+def calculateProbability():
+	global PFSPobj, probability, pheromone, heuristic, alpha, beta
+	N = PFSPobj.getNumJobs()
+	for i in range(0,N):
+		for j in range(0,N):
+			if(i == j):
+				probability[i][j] = 0.0
+			else:
+				probability[i][j] = pheromone[i][j]**alpha * heuristic[i][j]**beta
 
+def createColony():
+	global n_ants, PFSPobj, probability, seed
+	for i in range (n_ants):
+		colony.append(Ant(PFSPobj, probability, seed))
 
 
 def main() :
@@ -68,6 +99,11 @@ def main() :
 	if(readArguments()):
 		PFSPobj = PFSP(fileName)
 		initializePheromone(initial_pheromone)
+		initializeHeuristic()
+		initializeProbabilities()
+		calculateProbability()
+		createColony()
+
 
 if __name__ == "__main__":
     main()
