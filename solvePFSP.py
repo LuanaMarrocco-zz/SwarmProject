@@ -37,6 +37,7 @@ def readFile():
 def readArguments():
 	global n_ants,alpha,beta,rho, max_iterations, max_tours, seed, fileName
 	i = 1
+	retVal = True
 	while(i < len(sys.argv)):
 		if(sys.argv[i] == "--ants"):
 			n_ants = sys.argv[i+1]
@@ -48,31 +49,32 @@ def readArguments():
 			beta = sys.argv[i+1]
 			i += 1
 		elif(sys.argv[i] == "--rho"):
-			rho = sys.argv[i]
+			rho = sys.argv[i+1]
 			i += 1
 		elif(sys.argv[i] == "--iterations"):
-			max_iterations = sys.argv[i]
+			max_iterations = sys.argv[i+1]
 			i += 1
 		elif(sys.argv[i] == "--tours"):
-			max_tours = sys.argv[i]
+			max_tours = sys.argv[i+1]
 			i += 1
 		elif(sys.argv[i] == "--seed"):
-			seed = sys.argv[i]
+			seed = sys.argv[i+1]
 			i += 1
 		elif(sys.argv[i] == "--instance"):
-			fileName = sys.argv[i]
+			fileName = sys.argv[i+1]
 			i += 1
 		else:
 			print("Parameter ", sys.argv[i], " not recognized")
+			retVal = False
 		i += 1
-
+	return retVal
 
 
 
 
 def main() :
-	readArguments()
-	readFile()
+	if(readArguments()):
+		readFile()
 
 if __name__ == "__main__":
     main()
