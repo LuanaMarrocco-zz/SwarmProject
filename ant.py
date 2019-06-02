@@ -77,6 +77,9 @@ class Ant(object):
 			self.completionTimeMatrix.append(completionTimePerMachine)
 		self.completionTime = self.completionTimeMatrix[-1]
 
+	def getJob(self,i):
+		return self.solutionSequence[i]
+
 	def getWeightedTardiness(self):
 		return self.totalWeihtedTardiness
 

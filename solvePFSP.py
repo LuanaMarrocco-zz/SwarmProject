@@ -107,8 +107,8 @@ def initializeProbabilities():
 def calculateProbability():
 	global PFSPobj, probability, pheromone, heuristic, alpha, beta
 	N = PFSPobj.getNumJobs()
-	for i in range(0,N):
-		for j in range(0,N):
+	for i in range(N):
+		for j in range(N):
 			if(i == j):
 				probability[i][j] = 0.0
 			else:
@@ -127,6 +127,24 @@ def terminationCondition():
 		res = True
 	return res
 
+def evaporatePheromone():
+	global PFSPobj,pheromone, rho
+	N = PFSPobj.getNumJobs()
+	for i in range (N):
+		for j in range (N):
+			pheromone[i][j] = (1-rho)*pheromone[i][j]
+
+def addPheromone(job1, job2, delta):
+	pheromone[job1][job2] += delta
+
+def depositPheromone():
+	global PFSPobj,n_ants,colony
+	N = PFSPobj.getNumJobs()
+	for i in range (n_ants):
+		deltaf = 1.0/colony[i].getWeightedTardiness()
+		for j in range(1,N):
+			addPheromone(colony[i].getJob(j-1),colony[i].getJob(j),deltaf)
+		addPheromone(colony[i].getJob(-1), colony[i].getJob(0), deltaf)
 
 def main() :
 	global PFSPobj, initial_pheromone,probability,colony, tours, iterations, best_weighted_tardiness, best_ant
@@ -144,6 +162,9 @@ def main() :
 					best_weighted_tardiness = colony[i].getWeightedTardiness()
 					best_ant = colony[i]
 				tours += 1
+			evaporatePheromone()
+			depositPheromone()
+			calculateProbability()
 
 		iterations += 1
 	print("Voici la best: ",best_weighted_tardiness)
