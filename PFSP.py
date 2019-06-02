@@ -26,7 +26,19 @@ class PFSP(object):
 					_,date,_,weight = list(map(int, content))
 					self.dueDates.append(date)
 					self.weights.append(weight)
-	
+
 	def getNumJobs(self):
 		return self.N
+
+	def getDueDates(self):
+		return self.dueDates
+
+	def getProcessingTime(self):
+		return self.processingTime
+
+	def getWeights(self):
+		return self.weights
+
+	def getM(self):
+		return self.M
 

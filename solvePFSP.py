@@ -19,7 +19,7 @@ colony = []
 
 tours = 0;
 iterations = 0;
-best_total_tardiness = 10000000
+best_weighted_tardiness = None
 best_ant = None
 
 def printHelp():
@@ -47,25 +47,25 @@ def readArguments():
 	retVal = True
 	while(i < len(sys.argv)):
 		if(sys.argv[i] == "--ants"):
-			n_ants = sys.argv[i+1]
+			n_ants = int(sys.argv[i+1])
 			i += 1
 		elif(sys.argv[i] == "--alpha"):
 			alpha = int(sys.argv[i+1])
 			i += 1
 		elif(sys.argv[i] == "--beta"):
-			beta = sys.argv[i+1]
+			beta = int(sys.argv[i+1])
 			i += 1
 		elif(sys.argv[i] == "--rho"):
-			rho = sys.argv[i+1]
+			rho = int(sys.argv[i+1])
 			i += 1
 		elif(sys.argv[i] == "--iterations"):
-			max_iterations = sys.argv[i+1]
+			max_iterations = int(sys.argv[i+1])
 			i += 1
 		elif(sys.argv[i] == "--tours"):
-			max_tours = sys.argv[i+1]
+			max_tours = int(sys.argv[i+1])
 			i += 1
 		elif(sys.argv[i] == "--seed"):
-			seed = sys.argv[i+1]
+			seed = int(sys.argv[i+1])
 			i += 1
 		elif(sys.argv[i] == "--instance"):
 			fileName = sys.argv[i+1]
@@ -129,7 +129,7 @@ def terminationCondition():
 
 
 def main() :
-	global PFSPobj, initial_pheromone,probability,colony, tours, iterations, best_total_tardiness, best_ant
+	global PFSPobj, initial_pheromone,probability,colony, tours, iterations, best_weighted_tardiness, best_ant
 	if(readArguments()):
 		PFSPobj = PFSP(fileName)
 		initializePheromone(initial_pheromone)
@@ -140,12 +140,13 @@ def main() :
 		while(terminationCondition() == False):
 			for i in range (n_ants):
 				colony[i].search()
-				if(best_total_tardiness > colony[i].getTardiness()):
-					best_total_tardiness = colony[i].getTardiness
+				if(best_weighted_tardiness == None or best_weighted_tardiness > colony[i].getWeightedTardiness()):
+					best_weighted_tardiness = colony[i].getWeightedTardiness()
 					best_ant = colony[i]
 				tours += 1
 
 		iterations += 1
+	print("Voici la best: ",best_weighted_tardiness)
 
 
 
