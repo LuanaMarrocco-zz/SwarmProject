@@ -167,7 +167,7 @@ def main() :
 			calculateProbability()
 
 		iterations += 1
-	print("Voici la best: ",best_weighted_tardiness)
+		print("Voici la best: ",best_weighted_tardiness)
 
 
 

@@ -9,7 +9,7 @@ class Ant(object):
 		self.probability = probability
 		self.solutionSequence = [-1] * self.size
 		self.isAlreadySelected = [False] * self.size
-		self.selectiobProb = [0] * self.size
+		self.selectionProb = [0] * self.size
 		self.completionTimeMatrix = []
 		self.completionTime = None
 		self.tardiness = [0] * self.size
@@ -26,13 +26,30 @@ class Ant(object):
 			self.solutionSequence[i] = self.getNextJob(self.solutionSequence[i-1])
 			self.isAlreadySelected[self.solutionSequence[i]] = True
 		self.computeSolution()
-		print(self.totalWeihtedTardiness)
 	
 
 	#TO DO	
 	def getNextJob(self, previous):
-		res = (previous + 1) % self.size
-		return res
+		sumProb = 0.0
+		for j in range (self.size):
+			if(self.isAlreadySelected[j] == False and j != previous):
+				sumProb += self.probability[previous][j]
+				self.selectionProb[j] = sumProb
+			else:
+				self.selectionProb[j] = 0.0
+		
+		#TO DO: Pour le moment je prend betement le prochain dans l'ordre
+		if(sumProb <= 0):
+			print("coucou je suis dans getNextJob sumProb <= 0")
+			nextJob = (previous+1)%self.size
+			while(self.isAlreadySelected[nextJob] == True):
+				nextJob = (nextJob + 1) % self.size
+		else:
+			choice = random.random()*sumProb
+			nextJob = 0
+			while(choice > self.selectionProb[nextJob]):
+				nextJob += 1
+		return nextJob
 
 	def computeSolution(self):
 		self.computeCompletionTimeMatrix()
@@ -86,4 +103,4 @@ class Ant(object):
 	def clearSolution(self):
 		self.solutionSequence = [-1] * self.size
 		self.isAlreadySelected = [False] * self.size
-		self.selectiobProb = [0] * self.size
+		self.selectionProb = [0] * self.size
