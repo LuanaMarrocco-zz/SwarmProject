@@ -22,33 +22,26 @@ class Ant(object):
 		self.isAlreadySelected[self.solutionSequence[0]] = True
 		
 		#Selection of the next job
-		for i in range(1,self.size):
-			self.solutionSequence[i] = self.getNextJob(self.solutionSequence[i-1])
-			self.isAlreadySelected[self.solutionSequence[i]] = True
+		for time in range(1,self.size):
+			self.solutionSequence[time] = self.getNextJob(time)
+			self.isAlreadySelected[self.solutionSequence[time]] = True
 		self.computeSolution()
 	
 
 	#Using the random proportional rule	
-	def getNextJob(self, previous):
+	def getNextJob(self, time):
 		sumProb = 0.0
 		for j in range (self.size):
-			if(self.isAlreadySelected[j] == False and j != previous):
-				sumProb += self.probability[previous][j]
+			if(self.isAlreadySelected[j] == False):
+				sumProb += self.probability[j][time]
 				self.selectionProb[j] = sumProb
 			else:
 				self.selectionProb[j] = 0.0
 		
-		#TO DO: Pour le moment je prend betement le prochain dans l'ordre
-		if(sumProb <= 0):
-			print("coucou je suis dans getNextJob sumProb <= 0")
-			nextJob = (previous+1)%self.size
-			while(self.isAlreadySelected[nextJob] == True):
-				nextJob = (nextJob + 1) % self.size
-		else:
-			choice = random.random()*sumProb
-			nextJob = 0
-			while(choice > self.selectionProb[nextJob]):
-				nextJob += 1
+		choice = random.random()*sumProb
+		nextJob = 0
+		while(choice > self.selectionProb[nextJob]):
+			nextJob += 1
 		return nextJob
 
 

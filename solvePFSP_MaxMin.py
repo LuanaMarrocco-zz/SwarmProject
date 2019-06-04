@@ -3,9 +3,9 @@ from PFSP import PFSP
 from ant import Ant
 
 fileName = "PFSP_instances/DD_Ta051.txt"
-alpha=0.5
-beta=0.5
-rho=0.8
+alpha= 1.0
+beta=0
+rho=0.2
 n_ants=10
 max_iterations=0
 max_tours=10000
@@ -91,9 +91,7 @@ def initializePheromone(initial_pheromone):
 	N = PFSPobj.getNumJobs()
 	listPheromone = [initial_pheromone] * N
 	for i in range (N):
-		listPheromone[i] = 0.0
 		pheromone.append(listPheromone.copy())
-		listPheromone[i] = initial_pheromone
 
 def initializeHeuristic():
 	global PFSPobj, heuristic
@@ -127,10 +125,7 @@ def calculateProbability():
 	N = PFSPobj.getNumJobs()
 	for i in range(N):
 		for j in range(N):
-			if(i == j):
-				probability[i][j] = 0.0
-			else:
-				probability[i][j] = pheromone[i][j]**alpha * heuristic[i][j]**beta
+			probability[i][j] = pheromone[i][j]**alpha * heuristic[i][j]**beta
 
 def createColony():
 	global n_ants, PFSPobj, probability, seed, colony
@@ -154,27 +149,26 @@ def evaporatePheromone():
 			pheromone[i][j] = (1-rho)*pheromone[i][j]
 			checkPheromoneMaxMin(i,j)
 
-def addPheromone(job1, job2, delta):
+def addPheromone(job, time, delta):
 	global pheromone
-	pheromone[job1][job2] += delta
-	checkPheromoneMaxMin(job1,job2)
+	pheromone[job][time] += delta
+	checkPheromoneMaxMin(job,time)
 	
 #Deposit on the best tour of each iteration
 def depositPheromoneMaxMin():
 	global PFSPobj, best_weighted_tardiness_tour, best_ant_tour
 	N = PFSPobj.getNumJobs()
 	deltaf = 1.0/best_weighted_tardiness_tour #TO DO Best tardiness ever ou best tardiness du tour?
-	for j in range(1,N):
-		addPheromone(best_ant_tour.getJob(j-1),best_ant_tour.getJob(j),deltaf)
-	addPheromone(best_ant_tour.getJob(-1), best_ant_tour.getJob(0), deltaf)
+	for j in range(N):
+		addPheromone(best_ant_tour.getJob(j),j,deltaf)
 
-def checkPheromoneMaxMin(job1,job2):
+def checkPheromoneMaxMin(job,time):
 	global max_pheromone, pheromone, min_pheromone 
 	if(max_pheromone != None):
-		if(pheromone[job1][job2] > max_pheromone):
-			pheromone[job1][job2] = max_pheromone
-		elif(pheromone[job1][job2]< min_pheromone):
-			pheromone[job1][job2] =  min_pheromone
+		if(pheromone[job][time] > max_pheromone):
+			pheromone[job][time] = max_pheromone
+		elif(pheromone[job][time]< min_pheromone):
+			pheromone[job][time] =  min_pheromone
 
 def printPheromone():
 	global pheromone
@@ -199,6 +193,7 @@ def main() :
 			best_weighted_tardiness_tour = None
 			for i in range (n_ants):
 				colony[i].search()
+				print(colony[i].getWeightedTardiness())
 				if(best_weighted_tardiness_ever == None or best_weighted_tardiness_ever > colony[i].getWeightedTardiness()):
 					best_weighted_tardiness_ever = colony[i].getWeightedTardiness()
 					best_ant_ever = colony[i]
