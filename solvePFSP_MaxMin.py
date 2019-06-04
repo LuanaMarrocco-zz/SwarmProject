@@ -3,9 +3,9 @@ from PFSP import PFSP
 from ant import Ant
 
 fileName = "PFSP_instances/DD_Ta051.txt"
-alpha=1.0
-beta=0
-rho=0.2
+alpha=0.5
+beta=0.5
+rho=0.8
 n_ants=10
 max_iterations=0
 max_tours=10000
@@ -98,11 +98,22 @@ def initializePheromone(initial_pheromone):
 def initializeHeuristic():
 	global PFSPobj, heuristic
 	N = PFSPobj.getNumJobs()
+	p = PFSPobj.getProcessingTime()
+	m = PFSPobj.getM()
 	listHeuristic = [1.0] * N
+	#Creation of the matric
 	for i in range (N):
 		listHeuristic[i] = 0.0
 		heuristic.append(listHeuristic.copy())
 		listHeuristic[i] = 1.0
+	#Using the Widmer and Hertz distance
+	for u in range(N):
+		for v in range(N):
+			d_uv = p[u][1*2+1] + p[v][-1]
+			for k in range(2,m):
+				add = (m-k)*abs(p[u][k*2+1]-p[u][(k-1)*2+1])
+			d_uv += add
+			heuristic[u][v] = 1/d_uv
 
 def initializeProbabilities():
 	global PFSPobj, probability
@@ -200,9 +211,8 @@ def main() :
 			evaporatePheromone()
 			depositPheromoneMaxMin()
 			calculateProbability()
-			#printPheromone()
+			iterations += 1
 
-		iterations += 1
 		print("Voici la best ever: ",best_weighted_tardiness_ever)
 		print(best_ant_ever.getSolution())
 

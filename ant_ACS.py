@@ -33,6 +33,7 @@ class Ant(object):
 			self.solutionSequence[i] = self.getNextJobACS(self.solutionSequence[i-1])
 			self.isAlreadySelected[self.solutionSequence[i]] = True
 		self.computeSolution()
+		#print(self.solutionSequence)
 	
 
 	#Using the random proportional rule	

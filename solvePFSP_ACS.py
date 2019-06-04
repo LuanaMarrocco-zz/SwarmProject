@@ -3,8 +3,8 @@ from PFSP import PFSP
 from ant_ACS import Ant
 
 fileName = "PFSP_instances/DD_Ta051.txt"
-alpha=1.0
-beta=1.0
+alpha=0.85
+beta=0.15
 rho=0.2
 n_ants=10
 max_iterations=0
@@ -92,11 +92,22 @@ def initializePheromone(initial_pheromone):
 def initializeHeuristic():
 	global PFSPobj, heuristic
 	N = PFSPobj.getNumJobs()
+	p = PFSPobj.getProcessingTime()
+	m = PFSPobj.getM()
+
 	listHeuristic = [1.0] * N
 	for i in range (N):
 		listHeuristic[i] = 0.0
 		heuristic.append(listHeuristic.copy())
 		listHeuristic[i] = 1.0
+
+	for u in range(N):
+		for v in range(N):
+			d_uv = p[u][1*2+1] + p[v][m*2+1]
+			for k in range(2,m):
+				add = (m-k)*abs(p[u][k*2+1]-p[u][(k-1)*2+1])
+			d_uv += add
+			heuristic[u][v] = 1/d_uv
 
 def initializeProbabilities():
 	global PFSPobj, probability
@@ -162,12 +173,12 @@ def main() :
 				if(best_weighted_tardiness == None or best_weighted_tardiness > colony[i].getWeightedTardiness()):
 					best_weighted_tardiness = colony[i].getWeightedTardiness()
 					best_ant = colony[i]
-				tours += 1
+			tours += 1
 			evaporatePheromone()
 			depositPheromone()
 			calculateProbability()
-
-		iterations += 1
+			print("Voici la best iteration: ",best_weighted_tardiness)
+			#iterations += 1
 		print("Voici la best: ",best_weighted_tardiness)
 
 
