@@ -100,6 +100,9 @@ class Ant(object):
 	def getWeightedTardiness(self):
 		return self.totalWeihtedTardiness
 
+	def getSolution(self):
+		return self.solutionSequence
+		
 	def clearSolution(self):
 		self.solutionSequence = [-1] * self.size
 		self.isAlreadySelected = [False] * self.size
