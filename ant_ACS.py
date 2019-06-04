@@ -2,7 +2,7 @@ import random
 
 class Ant(object):
 
-	def __init__(self, PFSP, probability, seed):
+	def __init__(self, PFSP, probability, seed, q0, pheromone, heuristic, alpha, beta, initialPheromone, rho):
 		self.size = PFSP.getNumJobs()
 		self.PFSP = PFSP
 		self.seed = seed
@@ -15,7 +15,14 @@ class Ant(object):
 		self.tardiness = [0] * self.size
 		self.totalWeihtedTardiness = 0
 		random.seed(self.seed)
-		
+		self.q0 = q0
+		self.pheromone = pheromone
+		self.heuristic = heuristic
+		self.alpha = alpha
+		self.beta = beta
+		self.initialPheromone = initialPheromone
+		self.rho = rho
+
 	def search(self):
 		self.clearSolution()
 		self.solutionSequence[0] = int(random.random()*self.size)
@@ -23,7 +30,7 @@ class Ant(object):
 		
 		#Selection of the next job
 		for i in range(1,self.size):
-			self.solutionSequence[i] = self.getNextJob(self.solutionSequence[i-1])
+			self.solutionSequence[i] = self.getNextJobACS(self.solutionSequence[i-1])
 			self.isAlreadySelected[self.solutionSequence[i]] = True
 		self.computeSolution()
 	
@@ -53,8 +60,23 @@ class Ant(object):
 
 	#Using the state transition rule
 	def getNextJobACS(self,previous):
+		q = random.random()
+		nextJob = 0
+		if (q <= self.q0):
+			maxVal = 0
+			for i in range(self.size):
+				if(self.isAlreadySelected[i] == False):
+					val = self.pheromone[previous][i]*(self.heuristic[previous][i]**self.beta)
+					if(val > maxVal):
+						nextJob = i
+						maxVal = val
+		else:
+			nextJob = self.getNextJob(previous)
+		self.localUpdatePheromone(previous,nextJob)
+		return nextJob
 
-		return 1
+	def localUpdatePheromone(self, i, j):
+		self.pheromone[i][j] = (1-self.rho)*self.pheromone[i][j] + self.rho*self.initialPheromone
 
 	def computeSolution(self):
 		self.computeCompletionTimeMatrix()

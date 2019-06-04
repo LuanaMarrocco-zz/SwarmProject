@@ -147,7 +147,8 @@ def addPheromone(job1, job2, delta):
 	global pheromone
 	pheromone[job1][job2] += delta
 	checkPheromoneMaxMin(job1,job2)
-
+	
+#Deposit on the best tour of each iteration
 def depositPheromoneMaxMin():
 	global PFSPobj, best_weighted_tardiness_tour, best_ant_tour
 	N = PFSPobj.getNumJobs()

@@ -1,6 +1,6 @@
 import sys
 from PFSP import PFSP
-from ant import Ant
+from ant_ACS import Ant
 
 fileName = "PFSP_instances/DD_Ta051.txt"
 alpha=1.0
@@ -16,6 +16,7 @@ pheromone = []
 heuristic = []
 probability = []
 colony = []
+q0 = 0.5
 
 tours = 0;
 iterations = 0;
@@ -115,9 +116,9 @@ def calculateProbability():
 				probability[i][j] = pheromone[i][j]**alpha * heuristic[i][j]**beta
 
 def createColony():
-	global n_ants, PFSPobj, probability, seed
+	global n_ants, PFSPobj, probability, seed, q0, pheromone, heuristic, alpha, beta, initial_pheromone, rho
 	for i in range (n_ants):
-		colony.append(Ant(PFSPobj, probability, seed))
+		colony.append(Ant(PFSPobj, probability, seed, q0, pheromone, heuristic, alpha, beta, initial_pheromone, rho))
 
 def terminationCondition():
 	res = False
@@ -137,14 +138,14 @@ def evaporatePheromone():
 def addPheromone(job1, job2, delta):
 	pheromone[job1][job2] += delta
 
+#Deposit only on the global best tour
 def depositPheromone():
-	global PFSPobj,n_ants,colony
+	global PFSPobj,best_ant, best_weighted_tardiness
 	N = PFSPobj.getNumJobs()
-	for i in range (n_ants):
-		deltaf = 1.0/colony[i].getWeightedTardiness()
-		for j in range(1,N):
-			addPheromone(colony[i].getJob(j-1),colony[i].getJob(j),deltaf)
-		addPheromone(colony[i].getJob(-1), colony[i].getJob(0), deltaf)
+	deltaf = 1.0/best_weighted_tardiness
+	for j in range(1,N):
+		addPheromone(best_ant.getJob(j-1),best_ant.getJob(j),deltaf)
+	addPheromone(best_ant.getJob(-1), best_ant.getJob(0), deltaf)
 
 def main() :
 	global PFSPobj, initial_pheromone,probability,colony, tours, iterations, best_weighted_tardiness, best_ant
