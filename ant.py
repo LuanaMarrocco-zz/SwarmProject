@@ -51,10 +51,6 @@ class Ant(object):
 				nextJob += 1
 		return nextJob
 
-	#Using the state transition rule
-	def getNextJobACS(self,previous):
-
-		return 1
 
 	def computeSolution(self):
 		self.computeCompletionTimeMatrix()
