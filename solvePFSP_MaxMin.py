@@ -4,7 +4,7 @@ from ant import Ant
 
 fileName = "PFSP_instances/DD_Ta051.txt"
 alpha= 1.0
-beta=0
+beta=1.0
 rho=0.2
 n_ants=10
 max_iterations=0
@@ -98,6 +98,7 @@ def initializeHeuristic():
 	N = PFSPobj.getNumJobs()
 	p = PFSPobj.getProcessingTime()
 	m = PFSPobj.getM()
+	dueDates = PFSPobj.getDueDates()
 	listHeuristic = [1.0] * N
 	#Creation of the matric
 	for i in range (N):
@@ -105,13 +106,19 @@ def initializeHeuristic():
 		heuristic.append(listHeuristic.copy())
 		listHeuristic[i] = 1.0
 	#Using the Widmer and Hertz distance
-	for u in range(N):
+	"""for u in range(N):
 		for v in range(N):
 			d_uv = p[u][1*2+1] + p[v][-1]
 			for k in range(2,m):
 				add = (m-k)*abs(p[u][k*2+1]-p[u][(k-1)*2+1])
 			d_uv += add
-			heuristic[u][v] = 1/d_uv
+			heuristic[u][v] = 1/d_uv"""
+	for i in range(N):
+		for time in range(N):
+			dist = dueDates[i] - time
+			if (dist <= 0):
+				dist = 0.01
+			heuristic[i][time] = 1/dist
 
 def initializeProbabilities():
 	global PFSPobj, probability
@@ -151,14 +158,14 @@ def evaporatePheromone():
 
 def addPheromone(job, time, delta):
 	global pheromone
-	pheromone[job][time] += delta
+	pheromone[job][time] += delta*100000
 	checkPheromoneMaxMin(job,time)
 	
 #Deposit on the best tour of each iteration
 def depositPheromoneMaxMin():
 	global PFSPobj, best_weighted_tardiness_tour, best_ant_tour
 	N = PFSPobj.getNumJobs()
-	deltaf = 1.0/best_weighted_tardiness_tour #TO DO Best tardiness ever ou best tardiness du tour?
+	deltaf = (1.0/best_weighted_tardiness_tour)#TO DO Best tardiness ever ou best tardiness du tour?
 	for j in range(N):
 		addPheromone(best_ant_tour.getJob(j),j,deltaf)
 
