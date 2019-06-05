@@ -46,7 +46,6 @@ class Ant(object):
 				sumProb += self.probability[j][time]
 			else:
 				self.selectionProb[j] = 0.0
-		print(sumProb)
 		for j in range(self.size):
 			if(self.isAlreadySelected[j] == False):
 				self.selectionProb[j] = self.probability[j][time]/sumProb 
@@ -57,7 +56,7 @@ class Ant(object):
 	#Using the state transition rule
 	def getNextJobACS(self,time):
 		q = random.random()
-		nextJob = 0
+		nextJob = -1
 		if (q <= self.q0):
 			maxVal = 0
 			for i in range(self.size):
@@ -72,7 +71,7 @@ class Ant(object):
 		return nextJob
 
 	def localUpdatePheromone(self, i, j):
-		self.pheromone[i][j] = (1-self.rho)*self.pheromone[i][j] + self.rho*self.initialPheromone
+		self.pheromone[i][j] = ((1-self.rho)*self.pheromone[i][j] + self.rho*self.initialPheromone)#*1000000
 
 	def computeSolution(self):
 		self.computeCompletionTimeMatrix()

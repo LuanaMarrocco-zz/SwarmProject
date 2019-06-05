@@ -3,9 +3,10 @@ from PFSP import PFSP
 from ant import Ant
 
 fileName = "PFSP_instances/DD_Ta051.txt"
-alpha=1.0
-beta=2.0
-rho=0.2
+resultFile = "resultsMaxMin/" +fileName
+alpha=0.01
+beta=3.0
+rho=0.4
 n_ants=10
 max_iterations=10000
 seed = 0
@@ -15,6 +16,7 @@ pheromone = []
 heuristic = []
 probability = []
 colony = []
+countReInit = 0
 
 iterations = 0;
 best_weighted_tardiness_ever = None
@@ -46,7 +48,7 @@ def printHelp():
 	print(helpString)
 
 def readArguments():
-	global n_ants,alpha,beta,rho, max_iterations, seed, fileName
+	global n_ants,alpha,beta,rho, max_iterations, seed, fileName, resultFile
 	i = 1
 	retVal = True
 	while(i < len(sys.argv)):
@@ -70,6 +72,7 @@ def readArguments():
 			i += 1
 		elif(sys.argv[i] == "--instance"):
 			fileName = sys.argv[i+1]
+			resultFile = "resultsMaxMin/" +fileName
 			i += 1
 		elif(sys.argv[i] == "--help"):
 			printHelp()
@@ -140,12 +143,12 @@ def evaporatePheromone():
 	N = PFSPobj.getNumJobs()
 	for i in range (N):
 		for j in range (N):
-			pheromone[i][j] = (1-rho)*pheromone[i][j] 
+			pheromone[i][j] = (1-rho)*pheromone[i][j]
 			checkPheromoneMaxMin(i,j)
 
 def addPheromone(job, time, delta):
 	global pheromone
-	pheromone[job][time] += delta *1000000
+	pheromone[job][time] += delta * 1000000
 	checkPheromoneMaxMin(job,time)
 	
 #Deposit on the global best tour
@@ -173,40 +176,49 @@ def printPheromone():
 
 def main() :
 	global PFSPobj, initial_pheromone,probability,colony, iterations, best_weighted_tardiness_ever
-	global best_ant_ever, max_pheromone, min_pheromone, a_min_pheromone, rho, pheromone
-	global best_ant_tour, best_weighted_tardiness_tour
+	global best_ant_ever, max_pheromone, min_pheromone, a_min_pheromone, rho, pheromone, seed
+	global best_ant_tour, best_weighted_tardiness_tour, countReInit
 	if(readArguments()):
 		PFSPobj = PFSP(fileName)
-		initializePheromone(initial_pheromone)
-		initializeHeuristic()
-		initializeProbabilities()
-		calculateProbability()
-		createColony()
-		best_ant_ever = None
-		best_weighted_tardiness_ever = None
-		while(terminationCondition() == False):
-			#best_ant_tour = None
-			#best_weighted_tardiness_tour = None
-			for i in range (n_ants):
-				colony[i].search()
-				if(best_weighted_tardiness_ever == None or best_weighted_tardiness_ever > colony[i].getWeightedTardiness()):
-					best_weighted_tardiness_ever = colony[i].getWeightedTardiness()
-					best_ant_ever = colony[i]
-					max_pheromone = 1.0/(best_weighted_tardiness_ever*rho) * 100000
-					min_pheromone = max_pheromone/a_min_pheromone
-					print("Best found:")
-					print("Voici la best ever: ",best_weighted_tardiness_ever)
-					print(best_ant_ever.getSolution())
-					print("max: ", max_pheromone)
-					print("min: ", min_pheromone)
-				#if(best_ant_tour == None or best_weighted_tardiness_tour > colony[i].getWeightedTardiness()):
-				#	best_ant_tour = colony[i]
-				#	best_weighted_tardiness_tour = colony[i].getWeightedTardiness()
-			#print("best of tour: ", best_ant_tour.getWeightedTardiness())
-			evaporatePheromone()
-			depositPheromoneMaxMin()
+		fichier = open(resultFile, "w")
+		fichier.write("Total weighted tardiness\n")
+		fichier.close()
+		for run in range(10):
+			seed=run
+			initializePheromone(initial_pheromone)
+			initializeHeuristic()
+			initializeProbabilities()
 			calculateProbability()
-			iterations += 1
+			createColony()
+			best_ant_ever = None
+			best_weighted_tardiness_ever = None 
+			iterations = 0
+			max_pheromone = None
+			min_pheromone = None
+			while(terminationCondition() == False):
+				for i in range (n_ants):
+					colony[i].search()
+					if(best_weighted_tardiness_ever == None or best_weighted_tardiness_ever > colony[i].getWeightedTardiness()):
+						best_weighted_tardiness_ever = colony[i].getWeightedTardiness()
+						best_ant_ever = colony[i]
+						max_pheromone = 1.0/(best_weighted_tardiness_ever*rho)*100000
+						min_pheromone = max_pheromone/a_min_pheromone
+						print("Best found: ", best_weighted_tardiness_ever)
+						print(best_ant_ever.getSolution())
+						countReInit = 0
+				evaporatePheromone()
+				depositPheromoneMaxMin()
+				calculateProbability()
+				iterations += 1
+				countReInit += 1
+				if(countReInit == 20):
+					countReInit = 0
+					initializePheromone(initial_pheromone)
+					calculateProbability()
+			fichier = open(resultFile, "a")
+			fichier.write(str(best_weighted_tardiness_ever))
+			fichier.write("\n")
+			fichier.close()
 	#printPheromone()
 
 

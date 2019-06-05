@@ -2,8 +2,10 @@ import sys
 from PFSP import PFSP
 from ant_ACS import Ant
 
-fileName = "PFSP_instances/DD_Ta051.txt"
-alpha=1.0
+fileNamePath = "PFSP_instances/"
+fileName = fileNamePath +"DD_Ta051.txt"
+resultFile = "resultsACS/" +fileName
+alpha=0.5
 beta=2.0
 rho=0.2
 n_ants=10
@@ -15,9 +17,8 @@ pheromone = []
 heuristic = []
 probability = []
 colony = []
-q0 = 0.5
+q0 = 0.9
 
-tours = 0;
 iterations = 0;
 best_weighted_tardiness = None
 best_ant = None
@@ -42,7 +43,7 @@ def printHelp():
 	print(helpString)
 
 def readArguments():
-	global n_ants,alpha,beta,rho, max_iterations, max_tours, seed, fileName
+	global n_ants,alpha,beta,rho, max_iterations, max_tours, seed, fileName, resultFile
 	i = 1
 	retVal = True
 	while(i < len(sys.argv)):
@@ -68,7 +69,8 @@ def readArguments():
 			seed = int(sys.argv[i+1])
 			i += 1
 		elif(sys.argv[i] == "--instance"):
-			fileName = sys.argv[i+1]
+			fileName = "PFSP_instances/"+sys.argv[i+1]
+			resultFile = "results/" +fileName
 			i += 1
 		elif(sys.argv[i] == "--help"):
 			printHelp()
@@ -104,7 +106,7 @@ def initializeHeuristic():
 		for time in range(N):
 			dist = dueDates[i]
 			if (dist <= 0):
-				dist = 0.01
+				dist = 1
 			heuristic[i][time] = 1/dist
 
 def initializeProbabilities():
@@ -143,7 +145,7 @@ def evaporatePheromone():
 
 def addPheromone(job, time, delta):
 	global pheromone
-	pheromone[job][time] += delta *1000000
+	pheromone[job][time] = pheromone[job][time] + rho*delta *1000
 	
 #Deposit on the global best tour
 def depositPheromone():
@@ -154,7 +156,7 @@ def depositPheromone():
 		addPheromone(best_ant.getJob(j),j,deltaf)
 
 def main() :
-	global PFSPobj, initial_pheromone,probability,colony, tours, iterations, best_weighted_tardiness, best_ant
+	global PFSPobj, initial_pheromone,probability,colony, tours, iterations, best_weighted_tardiness, best_ant, resultFile
 	if(readArguments()):
 		PFSPobj = PFSP(fileName)
 		initializePheromone(initial_pheromone)
@@ -168,12 +170,16 @@ def main() :
 				if(best_weighted_tardiness == None or best_weighted_tardiness > colony[i].getWeightedTardiness()):
 					best_weighted_tardiness = colony[i].getWeightedTardiness()
 					best_ant = colony[i]
-			evaporatePheromone()
+					print("Voici la best ever: ",best_weighted_tardiness)
+					print(best_ant.getSolution())
+				calculateProbability()
+			#evaporatePheromone()
 			depositPheromone()
 			calculateProbability()
 			#print("Voici la best iteration: ",best_weighted_tardiness)
 			iterations += 1
 		print("Voici la best: ",best_weighted_tardiness)
+
 
 
 
