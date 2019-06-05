@@ -3,11 +3,9 @@ import numpy as np
 
 class Ant(object):
 
-	def __init__(self, PFSP, probability, seed, q0, pheromone, heuristic, alpha, beta, initialPheromone, rho):
-		self.size = PFSP.getNumJobs()
-		self.PFSP = PFSP
-		self.seed = seed
-		self.probability = probability
+	def __init__(self, ACS):
+		self.ACS = ACS
+		self.size = ACS.PFSPobj.getNumJobs()
 		self.solutionSequence = [-1] * self.size
 		self.isAlreadySelected = [False] * self.size
 		self.selectionProb = [0] * self.size
@@ -15,15 +13,8 @@ class Ant(object):
 		self.completionTime = None
 		self.tardiness = [0] * self.size
 		self.totalWeihtedTardiness = 0
-		random.seed(self.seed)
-		np.random.seed(self.seed)
-		self.q0 = q0
-		self.pheromone = pheromone
-		self.heuristic = heuristic
-		self.alpha = alpha
-		self.beta = beta
-		self.initialPheromone = initialPheromone
-		self.rho = rho
+		random.seed(self.ACS.seed)
+		np.random.seed(self.ACS.seed)
 
 	def search(self):
 		self.clearSolution()
@@ -43,12 +34,12 @@ class Ant(object):
 		sumProb = 0.0
 		for j in range (self.size):
 			if(self.isAlreadySelected[j] == False):
-				sumProb += self.probability[j][time]
+				sumProb += self.ACS.probability[j][time]
 			else:
 				self.selectionProb[j] = 0.0
 		for j in range(self.size):
 			if(self.isAlreadySelected[j] == False):
-				self.selectionProb[j] = self.probability[j][time]/sumProb 
+				self.selectionProb[j] = self.ACS.probability[j][time]/sumProb 
 		
 		nextJob = np.random.choice(self.size, p=self.selectionProb)
 		return nextJob
@@ -57,11 +48,11 @@ class Ant(object):
 	def getNextJobACS(self,time):
 		q = random.random()
 		nextJob = -1
-		if (q <= self.q0):
+		if (q <= self.ACS.q0):
 			maxVal = 0
 			for i in range(self.size):
 				if(self.isAlreadySelected[i] == False):
-					val = self.pheromone[i][time]*(self.heuristic[i][time]**self.beta)
+					val = self.ACS.pheromone[i][time]*(self.ACS.heuristic[i][time]**self.ACS.beta)
 					if(val > maxVal):
 						nextJob = i
 						maxVal = val
@@ -71,7 +62,7 @@ class Ant(object):
 		return nextJob
 
 	def localUpdatePheromone(self, i, j):
-		self.pheromone[i][j] = ((1-self.rho)*self.pheromone[i][j] + self.rho*self.initialPheromone)#*1000000
+		self.ACS.pheromone[i][j] = ((1-self.ACS.rho) * self.ACS.pheromone[i][j] + self.ACS.rho * self.ACS.initial_pheromone)
 
 	def computeSolution(self):
 		self.computeCompletionTimeMatrix()
@@ -79,7 +70,7 @@ class Ant(object):
 		self.computeTotelWeightedTardiness()
 
 	def computeTardinessList(self):
-		dueDates = self.PFSP.getDueDates()
+		dueDates = self.ACS.PFSPobj.getDueDates()
 		for i in range(self.size):
 			valTardi = self.completionTime[i] - dueDates[self.solutionSequence[i]]
 			tardi = max(0, valTardi)
@@ -87,14 +78,14 @@ class Ant(object):
 
 	def computeTotelWeightedTardiness(self):
 		tot = 0
-		weights = self.PFSP.getWeights()
+		weights = self.ACS.PFSPobj.getWeights()
 		for i in range(self.size):
 			tot = tot + self.tardiness[i]*weights[self.solutionSequence[i]]
 		self.totalWeihtedTardiness = tot
 
 	def computeCompletionTimeMatrix(self):
-		M = self.PFSP.getM()
-		processingTimes = self.PFSP.getProcessingTime()
+		M = self.ACS.PFSPobj.getM()
+		processingTimes = self.ACS.PFSPobj.getProcessingTime()
 		for i in range (M):
 			completionTimePerMachine = []
 			if (i==0):
