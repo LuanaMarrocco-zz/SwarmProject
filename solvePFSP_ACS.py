@@ -3,12 +3,11 @@ from PFSP import PFSP
 from ant_ACS import Ant
 
 fileName = "PFSP_instances/DD_Ta051.txt"
-alpha=0.85
-beta=0.15
+alpha=1.0
+beta=2.0
 rho=0.2
 n_ants=10
-max_iterations=0
-max_tours=10000
+max_iterations=10000
 seed = 0
 initial_pheromone = 1.0
 PFSPobj = None
@@ -82,37 +81,37 @@ def readArguments():
 
 def initializePheromone(initial_pheromone):
 	global PFSPobj, pheromone
+	pheromone = []
 	N = PFSPobj.getNumJobs()
 	listPheromone = [initial_pheromone] * N
 	for i in range (N):
-		listPheromone[i] = 0.0
 		pheromone.append(listPheromone.copy())
-		listPheromone[i] = initial_pheromone
 
 def initializeHeuristic():
 	global PFSPobj, heuristic
 	N = PFSPobj.getNumJobs()
 	p = PFSPobj.getProcessingTime()
 	m = PFSPobj.getM()
-
+	heuristic = []
+	dueDates = PFSPobj.getDueDates()
 	listHeuristic = [1.0] * N
+	#Creation of the matric
 	for i in range (N):
 		listHeuristic[i] = 0.0
 		heuristic.append(listHeuristic.copy())
 		listHeuristic[i] = 1.0
-
-	for u in range(N):
-		for v in range(N):
-			d_uv = p[u][1*2+1] + p[v][m*2+1]
-			for k in range(2,m):
-				add = (m-k)*abs(p[u][k*2+1]-p[u][(k-1)*2+1])
-			d_uv += add
-			heuristic[u][v] = 1/d_uv
+	for i in range(N):
+		for time in range(N):
+			dist = dueDates[i]
+			if (dist <= 0):
+				dist = 0.01
+			heuristic[i][time] = 1/dist
 
 def initializeProbabilities():
 	global PFSPobj, probability
 	N = PFSPobj.getNumJobs()
 	listProb = [0.0] * N
+	probability = []
 	for i in range(N):
 		probability.append(listProb.copy())
 
@@ -121,21 +120,17 @@ def calculateProbability():
 	N = PFSPobj.getNumJobs()
 	for i in range(N):
 		for j in range(N):
-			if(i == j):
-				probability[i][j] = 0.0
-			else:
-				probability[i][j] = pheromone[i][j]**alpha * heuristic[i][j]**beta
+			probability[i][j] = pheromone[i][j]**alpha * heuristic[i][j]**beta
 
 def createColony():
-	global n_ants, PFSPobj, probability, seed, q0, pheromone, heuristic, alpha, beta, initial_pheromone, rho
+	global n_ants, PFSPobj, probability, seed, colony, q0, pheromone, heuristic, alpha, beta, initial_pheromone, rho
 	for i in range (n_ants):
 		colony.append(Ant(PFSPobj, probability, seed, q0, pheromone, heuristic, alpha, beta, initial_pheromone, rho))
 
 def terminationCondition():
+	global max_iterations, iterations
 	res = False
-	if(max_tours != 0 and tours > max_tours):
-		res = True
-	if(max_iterations !=0 and iterations >= max_iterations):
+	if (iterations >= max_iterations):
 		res = True
 	return res
 
@@ -146,17 +141,17 @@ def evaporatePheromone():
 		for j in range (N):
 			pheromone[i][j] = (1-rho)*pheromone[i][j]
 
-def addPheromone(job1, job2, delta):
-	pheromone[job1][job2] += delta
-
-#Deposit only on the global best tour
+def addPheromone(job, time, delta):
+	global pheromone
+	pheromone[job][time] += delta *1000000
+	
+#Deposit on the global best tour
 def depositPheromone():
-	global PFSPobj,best_ant, best_weighted_tardiness
+	global PFSPobj, best_weighted_tardiness_ever, best_ant_ever
 	N = PFSPobj.getNumJobs()
-	deltaf = 1.0/best_weighted_tardiness
-	for j in range(1,N):
-		addPheromone(best_ant.getJob(j-1),best_ant.getJob(j),deltaf)
-	addPheromone(best_ant.getJob(-1), best_ant.getJob(0), deltaf)
+	deltaf = (1.0/best_weighted_tardiness)
+	for j in range(N):
+		addPheromone(best_ant.getJob(j),j,deltaf)
 
 def main() :
 	global PFSPobj, initial_pheromone,probability,colony, tours, iterations, best_weighted_tardiness, best_ant
@@ -173,12 +168,11 @@ def main() :
 				if(best_weighted_tardiness == None or best_weighted_tardiness > colony[i].getWeightedTardiness()):
 					best_weighted_tardiness = colony[i].getWeightedTardiness()
 					best_ant = colony[i]
-			tours += 1
 			evaporatePheromone()
 			depositPheromone()
 			calculateProbability()
-			print("Voici la best iteration: ",best_weighted_tardiness)
-			#iterations += 1
+			#print("Voici la best iteration: ",best_weighted_tardiness)
+			iterations += 1
 		print("Voici la best: ",best_weighted_tardiness)
 
 

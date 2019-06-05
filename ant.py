@@ -16,6 +16,7 @@ class Ant(object):
 		self.tardiness = [0] * self.size
 		self.totalWeihtedTardiness = 0
 		random.seed(self.seed)
+		np.random.seed(self.seed)
 		
 	def search(self):
 		self.clearSolution()

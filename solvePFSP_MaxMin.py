@@ -3,8 +3,8 @@ from PFSP import PFSP
 from ant import Ant
 
 fileName = "PFSP_instances/DD_Ta051.txt"
-alpha= 0.7
-beta=1.5
+alpha=1.0
+beta=2.0
 rho=0.2
 n_ants=10
 max_iterations=10000
@@ -23,8 +23,9 @@ best_ant_ever = None
 best_weighted_tardiness_tour = None
 best_ant_tour = None
 
-max_pheromone = 10
-min_pheromone = 0.01
+max_pheromone = None
+min_pheromone = None
+a_min_pheromone = 1000
 
 def printHelp():
 	global initial_pheromone
@@ -104,7 +105,7 @@ def initializeHeuristic():
 		for time in range(N):
 			dist = dueDates[i]
 			if (dist <= 0):
-				dist = 0.01
+				dist = 1
 			heuristic[i][time] = 1/dist
 
 def initializeProbabilities():
@@ -139,15 +140,15 @@ def evaporatePheromone():
 	N = PFSPobj.getNumJobs()
 	for i in range (N):
 		for j in range (N):
-			pheromone[i][j] = (1-rho)*pheromone[i][j]
+			pheromone[i][j] = (1-rho)*pheromone[i][j] 
 			checkPheromoneMaxMin(i,j)
 
 def addPheromone(job, time, delta):
 	global pheromone
-	pheromone[job][time] += delta *100000
+	pheromone[job][time] += delta *1000000
 	checkPheromoneMaxMin(job,time)
 	
-#Deposit on the best tour of each iteration
+#Deposit on the global best tour
 def depositPheromoneMaxMin():
 	global PFSPobj, best_weighted_tardiness_ever, best_ant_ever
 	N = PFSPobj.getNumJobs()
@@ -191,6 +192,13 @@ def main() :
 				if(best_weighted_tardiness_ever == None or best_weighted_tardiness_ever > colony[i].getWeightedTardiness()):
 					best_weighted_tardiness_ever = colony[i].getWeightedTardiness()
 					best_ant_ever = colony[i]
+					max_pheromone = 1.0/(best_weighted_tardiness_ever*rho) * 100000
+					min_pheromone = max_pheromone/a_min_pheromone
+					print("Best found:")
+					print("Voici la best ever: ",best_weighted_tardiness_ever)
+					print(best_ant_ever.getSolution())
+					print("max: ", max_pheromone)
+					print("min: ", min_pheromone)
 				#if(best_ant_tour == None or best_weighted_tardiness_tour > colony[i].getWeightedTardiness()):
 				#	best_ant_tour = colony[i]
 				#	best_weighted_tardiness_tour = colony[i].getWeightedTardiness()
@@ -199,10 +207,7 @@ def main() :
 			depositPheromoneMaxMin()
 			calculateProbability()
 			iterations += 1
-
-			print("Voici la best ever: ",best_weighted_tardiness_ever)
-			print(best_ant_ever.getSolution())
-	printPheromone()
+	#printPheromone()
 
 
 
