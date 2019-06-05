@@ -1,4 +1,5 @@
 import random
+import numpy as np
 
 class Ant(object):
 
@@ -36,27 +37,20 @@ class Ant(object):
 		#print(self.solutionSequence)
 	
 
-	#Using the random proportional rule	
-	def getNextJob(self, previous):
+		#Using the random proportional rule	
+	def getNextJob(self, time):
 		sumProb = 0.0
 		for j in range (self.size):
-			if(self.isAlreadySelected[j] == False and j != previous):
-				sumProb += self.probability[previous][j]
-				self.selectionProb[j] = sumProb
+			if(self.isAlreadySelected[j] == False):
+				sumProb += self.probability[j][time]
 			else:
 				self.selectionProb[j] = 0.0
 		
-		#TO DO: Pour le moment je prend betement le prochain dans l'ordre
-		if(sumProb <= 0):
-			print("coucou je suis dans getNextJob sumProb <= 0")
-			nextJob = (previous+1)%self.size
-			while(self.isAlreadySelected[nextJob] == True):
-				nextJob = (nextJob + 1) % self.size
-		else:
-			choice = random.random()*sumProb
-			nextJob = 0
-			while(choice > self.selectionProb[nextJob]):
-				nextJob += 1
+		for j in range(self.size):
+			if(self.isAlreadySelected[j] == False):
+				self.selectionProb[j] = self.probability[j][time]/sumProb 
+		
+		nextJob = np.random.choice(self.size, p=self.selectionProb)
 		return nextJob
 
 	#Using the state transition rule

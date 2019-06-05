@@ -3,12 +3,11 @@ from PFSP import PFSP
 from ant import Ant
 
 fileName = "PFSP_instances/DD_Ta051.txt"
-alpha= 1.0
-beta=1.0
+alpha= 0.7
+beta=1.5
 rho=0.2
 n_ants=10
-max_iterations=0
-max_tours=10000
+max_iterations=10000
 seed = 0
 initial_pheromone = 1.0
 PFSPobj = None
@@ -17,7 +16,6 @@ heuristic = []
 probability = []
 colony = []
 
-tours = 0;
 iterations = 0;
 best_weighted_tardiness_ever = None
 best_ant_ever = None
@@ -25,9 +23,8 @@ best_ant_ever = None
 best_weighted_tardiness_tour = None
 best_ant_tour = None
 
-max_pheromone = None
-min_pheromone = None
-a_min_pheromone = 100
+max_pheromone = 10
+min_pheromone = 0.01
 
 def printHelp():
 	global initial_pheromone
@@ -39,8 +36,7 @@ def printHelp():
 		--alpha: Alpha parameter (float). Default=1.
 		--beta: Beta parameter (float). Default=1.
 		--rho: Rho parameter (float). Defaut=0.2.
-		--tours: Maximum number of tours to build (integer). Default=10000.
-		--iterations: Maximum number of iterations to perform (interger). Default:0 (disabled).
+		--iterations: Maximum number of iterations to perform (interger). Default:10000.
 		--seed: Number for the random seed generator.
 		--instance: Path to the instance file
 	ACO other parameters:
@@ -49,7 +45,7 @@ def printHelp():
 	print(helpString)
 
 def readArguments():
-	global n_ants,alpha,beta,rho, max_iterations, max_tours, seed, fileName
+	global n_ants,alpha,beta,rho, max_iterations, seed, fileName
 	i = 1
 	retVal = True
 	while(i < len(sys.argv)):
@@ -68,9 +64,6 @@ def readArguments():
 		elif(sys.argv[i] == "--iterations"):
 			max_iterations = int(sys.argv[i+1])
 			i += 1
-		elif(sys.argv[i] == "--tours"):
-			max_tours = int(sys.argv[i+1])
-			i += 1
 		elif(sys.argv[i] == "--seed"):
 			seed = int(sys.argv[i+1])
 			i += 1
@@ -88,6 +81,7 @@ def readArguments():
 
 def initializePheromone(initial_pheromone):
 	global PFSPobj, pheromone
+	pheromone = []
 	N = PFSPobj.getNumJobs()
 	listPheromone = [initial_pheromone] * N
 	for i in range (N):
@@ -98,6 +92,7 @@ def initializeHeuristic():
 	N = PFSPobj.getNumJobs()
 	p = PFSPobj.getProcessingTime()
 	m = PFSPobj.getM()
+	heuristic = []
 	dueDates = PFSPobj.getDueDates()
 	listHeuristic = [1.0] * N
 	#Creation of the matric
@@ -105,17 +100,9 @@ def initializeHeuristic():
 		listHeuristic[i] = 0.0
 		heuristic.append(listHeuristic.copy())
 		listHeuristic[i] = 1.0
-	#Using the Widmer and Hertz distance
-	"""for u in range(N):
-		for v in range(N):
-			d_uv = p[u][1*2+1] + p[v][-1]
-			for k in range(2,m):
-				add = (m-k)*abs(p[u][k*2+1]-p[u][(k-1)*2+1])
-			d_uv += add
-			heuristic[u][v] = 1/d_uv"""
 	for i in range(N):
 		for time in range(N):
-			dist = dueDates[i] - time
+			dist = dueDates[i]
 			if (dist <= 0):
 				dist = 0.01
 			heuristic[i][time] = 1/dist
@@ -124,6 +111,7 @@ def initializeProbabilities():
 	global PFSPobj, probability
 	N = PFSPobj.getNumJobs()
 	listProb = [0.0] * N
+	probability = []
 	for i in range(N):
 		probability.append(listProb.copy())
 
@@ -140,11 +128,9 @@ def createColony():
 		colony.append(Ant(PFSPobj, probability, seed))
 
 def terminationCondition():
-	global max_tours, tours, max_iterations, iterations
+	global max_iterations, iterations
 	res = False
-	if(max_tours != 0 and tours > max_tours):
-		res = True
-	if(max_iterations !=0 and iterations >= max_iterations):
+	if (iterations >= max_iterations):
 		res = True
 	return res
 
@@ -158,16 +144,16 @@ def evaporatePheromone():
 
 def addPheromone(job, time, delta):
 	global pheromone
-	pheromone[job][time] += delta*100000
+	pheromone[job][time] += delta *100000
 	checkPheromoneMaxMin(job,time)
 	
 #Deposit on the best tour of each iteration
 def depositPheromoneMaxMin():
-	global PFSPobj, best_weighted_tardiness_tour, best_ant_tour
+	global PFSPobj, best_weighted_tardiness_ever, best_ant_ever
 	N = PFSPobj.getNumJobs()
-	deltaf = (1.0/best_weighted_tardiness_tour)#TO DO Best tardiness ever ou best tardiness du tour?
+	deltaf = (1.0/best_weighted_tardiness_ever)#TO DO Best tardiness ever ou best tardiness du tour?
 	for j in range(N):
-		addPheromone(best_ant_tour.getJob(j),j,deltaf)
+		addPheromone(best_ant_ever.getJob(j),j,deltaf)
 
 def checkPheromoneMaxMin(job,time):
 	global max_pheromone, pheromone, min_pheromone 
@@ -185,8 +171,8 @@ def printPheromone():
 	print()
 
 def main() :
-	global PFSPobj, initial_pheromone,probability,colony, tours, iterations, best_weighted_tardiness_ever
-	global best_ant_ever, max_pheromone, min_pheromone, a_min_pheromone, rho
+	global PFSPobj, initial_pheromone,probability,colony, iterations, best_weighted_tardiness_ever
+	global best_ant_ever, max_pheromone, min_pheromone, a_min_pheromone, rho, pheromone
 	global best_ant_tour, best_weighted_tardiness_tour
 	if(readArguments()):
 		PFSPobj = PFSP(fileName)
@@ -195,29 +181,28 @@ def main() :
 		initializeProbabilities()
 		calculateProbability()
 		createColony()
+		best_ant_ever = None
+		best_weighted_tardiness_ever = None
 		while(terminationCondition() == False):
-			best_ant_tour = None
-			best_weighted_tardiness_tour = None
+			#best_ant_tour = None
+			#best_weighted_tardiness_tour = None
 			for i in range (n_ants):
 				colony[i].search()
-				print(colony[i].getWeightedTardiness())
 				if(best_weighted_tardiness_ever == None or best_weighted_tardiness_ever > colony[i].getWeightedTardiness()):
 					best_weighted_tardiness_ever = colony[i].getWeightedTardiness()
 					best_ant_ever = colony[i]
-					max_pheromone = 1/(rho*best_weighted_tardiness_ever)
-					min_pheromone = max_pheromone/a_min_pheromone
-				if(best_ant_tour == None or best_weighted_tardiness_tour > colony[i].getWeightedTardiness()):
-					best_ant_tour = colony[i]
-					best_weighted_tardiness_tour = colony[i].getWeightedTardiness()
-				tours += 1
+				#if(best_ant_tour == None or best_weighted_tardiness_tour > colony[i].getWeightedTardiness()):
+				#	best_ant_tour = colony[i]
+				#	best_weighted_tardiness_tour = colony[i].getWeightedTardiness()
+			#print("best of tour: ", best_ant_tour.getWeightedTardiness())
 			evaporatePheromone()
 			depositPheromoneMaxMin()
 			calculateProbability()
 			iterations += 1
 
-		print("Voici la best ever: ",best_weighted_tardiness_ever)
-		print(best_ant_ever.getSolution())
-
+			print("Voici la best ever: ",best_weighted_tardiness_ever)
+			print(best_ant_ever.getSolution())
+	printPheromone()
 
 
 

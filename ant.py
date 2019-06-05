@@ -1,4 +1,5 @@
 import random
+import numpy as np
 
 class Ant(object):
 
@@ -34,14 +35,14 @@ class Ant(object):
 		for j in range (self.size):
 			if(self.isAlreadySelected[j] == False):
 				sumProb += self.probability[j][time]
-				self.selectionProb[j] = sumProb
 			else:
 				self.selectionProb[j] = 0.0
 		
-		choice = random.random()*sumProb
-		nextJob = 0
-		while(choice > self.selectionProb[nextJob]):
-			nextJob += 1
+		for j in range(self.size):
+			if(self.isAlreadySelected[j] == False):
+				self.selectionProb[j] = self.probability[j][time]/sumProb 
+		
+		nextJob = np.random.choice(self.size, p=self.selectionProb)
 		return nextJob
 
 

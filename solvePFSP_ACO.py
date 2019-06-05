@@ -7,8 +7,7 @@ alpha=1.0
 beta=1.0
 rho=0.2
 n_ants=10
-max_iterations=0
-max_tours=10000
+max_iterations=10000
 seed = 0
 initial_pheromone = 1.0
 PFSPobj = None
@@ -17,7 +16,6 @@ heuristic = []
 probability = []
 colony = []
 
-tours = 0;
 iterations = 0;
 best_weighted_tardiness = None
 best_ant = None
@@ -84,18 +82,17 @@ def initializePheromone(initial_pheromone):
 	N = PFSPobj.getNumJobs()
 	listPheromone = [initial_pheromone] * N
 	for i in range (N):
-		listPheromone[i] = 0.0
 		pheromone.append(listPheromone.copy())
-		listPheromone[i] = initial_pheromone
 
 def initializeHeuristic():
 	global PFSPobj, heuristic
 	N = PFSPobj.getNumJobs()
 	listHeuristic = [1.0] * N
 	for i in range (N):
-		listHeuristic[i] = 0.0
 		heuristic.append(listHeuristic.copy())
-		listHeuristic[i] = 1.0
+	for i in range (N):
+		for j in range (N):
+			heuristic[i][j] = PFSPobj.getDueDates()[i]
 
 def initializeProbabilities():
 	global PFSPobj, probability
@@ -108,46 +105,35 @@ def calculateProbability():
 	global PFSPobj, probability, pheromone, heuristic, alpha, beta
 	N = PFSPobj.getNumJobs()
 	for i in range(N):
-		for j in range(N):
-			if(i == j):
-				probability[i][j] = 0.0
-			else:
-				probability[i][j] = pheromone[i][j]**alpha * heuristic[i][j]**beta
+		for time in range(N):
+			probability[i][time] = pheromone[i][time]**alpha * heuristic[i][time]**beta
 
 def createColony():
 	global n_ants, PFSPobj, probability, seed
 	for i in range (n_ants):
 		colony.append(Ant(PFSPobj, probability, seed))
 
-def terminationCondition():
-	res = False
-	if(max_tours != 0 and tours > max_tours):
-		res = True
-	if(max_iterations !=0 and iterations >= max_iterations):
-		res = True
-	return res
-
 def evaporatePheromone():
 	global PFSPobj,pheromone, rho
 	N = PFSPobj.getNumJobs()
 	for i in range (N):
-		for j in range (N):
-			pheromone[i][j] = (1-rho)*pheromone[i][j]
+		for time in range (N):
+			pheromone[i][time] = (1-rho)*pheromone[i][time]
 
-def addPheromone(job1, job2, delta):
-	pheromone[job1][job2] += delta
+def addPheromone(job1, time, delta):
+	pheromone[job1][time] += delta*100000
 
 def depositPheromone():
 	global PFSPobj,n_ants,colony
 	N = PFSPobj.getNumJobs()
 	for i in range (n_ants):
-		deltaf = 1.0/colony[i].getWeightedTardiness()
-		for j in range(1,N):
-			addPheromone(colony[i].getJob(j-1),colony[i].getJob(j),deltaf)
-		addPheromone(colony[i].getJob(-1), colony[i].getJob(0), deltaf)
+		cost = colony[i].getWeightedTardiness()
+		deltaf = 1.0/cost
+		for j in range(N):
+			addPheromone(colony[i].getJob(j),j,deltaf)
 
 def main() :
-	global PFSPobj, initial_pheromone,probability,colony, tours, iterations, best_weighted_tardiness, best_ant
+	global PFSPobj, initial_pheromone,probability,colony, max_iterations, best_weighted_tardiness, best_ant
 	if(readArguments()):
 		PFSPobj = PFSP(fileName)
 		initializePheromone(initial_pheromone)
@@ -155,18 +141,17 @@ def main() :
 		initializeProbabilities()
 		calculateProbability()
 		createColony()
-		while(terminationCondition() == False):
+		for it in range (max_iterations):
 			for i in range (n_ants):
 				colony[i].search()
 				if(best_weighted_tardiness == None or best_weighted_tardiness > colony[i].getWeightedTardiness()):
 					best_weighted_tardiness = colony[i].getWeightedTardiness()
 					best_ant = colony[i]
-				tours += 1
 			evaporatePheromone()
 			depositPheromone()
 			calculateProbability()
+			print(it)
 
-		iterations += 1
 		print("Voici la best: ",best_weighted_tardiness)
 
 
