@@ -1,3 +1,2 @@
 Total weighted tardiness
-100858
-93798
+66851

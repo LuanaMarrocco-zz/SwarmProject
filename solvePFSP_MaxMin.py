@@ -2,11 +2,12 @@ import sys
 from PFSP import PFSP
 from ant import Ant
 import time
+import copy
 
 fileName = "PFSP_instances/DD_Ta051.txt"
 resultFile = "resultsMaxMin/" +fileName
-alpha=0.1
-beta=2.0
+alpha=2.0
+beta=3.0
 rho=0.2
 n_ants=10
 max_iterations=10000
@@ -151,7 +152,7 @@ def evaporatePheromone():
 
 def addPheromone(job, time, delta):
 	global pheromone
-	pheromone[job][time] += delta *1000#*1000000
+	pheromone[job][time] += delta *1000000
 	checkPheromoneMaxMin(job,time)
 	
 #Deposit on the global best tour
@@ -204,8 +205,9 @@ def main() :
 					colony[i].search()
 					if(best_weighted_tardiness_ever == None or best_weighted_tardiness_ever > colony[i].getWeightedTardiness()):
 						best_weighted_tardiness_ever = colony[i].getWeightedTardiness()
-						best_ant_ever = colony[i]
-						max_pheromone = 1.0/(best_weighted_tardiness_ever*rho) *1000#*100000
+						best_ant_ever = copy.deepcopy(colony[i])
+						best_ant_ever.solutionSequence = copy.copy(colony[i].getSolution())
+						max_pheromone = 1.0/(best_weighted_tardiness_ever*rho) *100000
 						min_pheromone = max_pheromone/a_min_pheromone
 						print("Best found: ", best_weighted_tardiness_ever)
 						print(best_ant_ever.getSolution())
