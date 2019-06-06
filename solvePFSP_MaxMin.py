@@ -34,8 +34,8 @@ t0 = None
 def printHelp():
 	global initial_pheromone
 	helpString = """	ACO Usage:
-		./aco --ants <int> --alpha <float> --beta <float> --rho <float> --tours <int> --iterations <int> --seed <int> --instance <path>
-		Example: ./aco --tours 2000 --seed 123 --instance eil151.tsp
+		python solePFSP_maxMin.py --ants <int> --alpha <float> --beta <float> --rho <float> --tours <int> --iterations <int> --seed <int> --instance <path>
+		Example: python solePFSP_maxMin.py --tours 2000 --seed 123 --instance DD_Ta051.txt
 	ACO flags:
 		--ants: Number of ants to build every iteration. Default=10.
 		--alpha: Alpha parameter (float). Default=1.
@@ -43,7 +43,7 @@ def printHelp():
 		--rho: Rho parameter (float). Defaut=0.2.
 		--iterations: Maximum number of iterations to perform (interger). Default:10000.
 		--seed: Number for the random seed generator.
-		--instance: Path to the instance file
+		--instance: Path to the instance file. The file should be in the PFSP_instances folder
 	ACO other parameters:
 		initial pheromone: """
 	helpString += str(initial_pheromone)
