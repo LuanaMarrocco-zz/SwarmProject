@@ -1,10 +1,11 @@
 import sys
 from PFSP import PFSP
 from ant import Ant
+import time
 
 fileName = "PFSP_instances/DD_Ta051.txt"
 resultFile = "resultsMaxMin/" +fileName
-alpha=0.01
+alpha=1
 beta=3.0
 rho=0.4
 n_ants=10
@@ -28,6 +29,7 @@ best_ant_tour = None
 max_pheromone = None
 min_pheromone = None
 a_min_pheromone = 1000
+t0 = None
 
 def printHelp():
 	global initial_pheromone
@@ -132,11 +134,14 @@ def createColony():
 		colony.append(Ant(PFSPobj, probability, seed))
 
 def terminationCondition():
-	global max_iterations, iterations
+	global t0
 	res = False
-	if (iterations >= max_iterations):
+	t = time.time() - t0
+	if(t > 30):
 		res = True
 	return res
+
+
 
 def evaporatePheromone():
 	global PFSPobj,pheromone, rho
@@ -177,7 +182,7 @@ def printPheromone():
 def main() :
 	global PFSPobj, initial_pheromone,probability,colony, iterations, best_weighted_tardiness_ever
 	global best_ant_ever, max_pheromone, min_pheromone, a_min_pheromone, rho, pheromone, seed
-	global best_ant_tour, best_weighted_tardiness_tour, countReInit
+	global best_ant_tour, best_weighted_tardiness_tour, countReInit, t0
 	if(readArguments()):
 		PFSPobj = PFSP(fileName)
 		fichier = open(resultFile, "w")
@@ -195,6 +200,7 @@ def main() :
 			iterations = 0
 			max_pheromone = None
 			min_pheromone = None
+			t0 = time.time()
 			while(terminationCondition() == False):
 				for i in range (n_ants):
 					colony[i].search()
