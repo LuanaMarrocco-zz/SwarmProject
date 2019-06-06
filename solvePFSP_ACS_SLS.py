@@ -8,19 +8,19 @@ class ACS(object):
 	def __init__(self, argv):
 		self.fileName = "PFSP_instances/DD_Ta051.txt"
 		self.resultFile = "resultsACS/" +self.fileName
-		self.alpha=0.1
-		self.beta=2.0
+		self.alpha=1.0
+		self.beta=1.0
 		self.rho=0.2
 		self.n_ants=10
 		self.max_iterations=10000
 		self.seed = 0
-		self.initial_pheromone = 0.0001
+		self.initial_pheromone = 1
 		self.PFSPobj = None
 		self.pheromone = []
 		self.heuristic = []
 		self.probability = []
 		self.colony = []
-		self.q0 = 0.9
+		self.q0 = 0.5
 		self.iterations = 0
 		self.countSLS = 0
 		self.runs = 5
@@ -54,12 +54,23 @@ class ACS(object):
 				self.calculateProbability()
 				#print("Voici la best iteration: ",best_weighted_tardiness)
 				self.iterations += 1
+			#self.SLS()
 			print("Voici la best: ",self.best_weighted_tardiness)
 			print(self.best_ant.getWeightedTardiness())
 			fichier = open(self.resultFile, "a")
 			fichier.write(str(self.best_weighted_tardiness))
 			fichier.write("\n")
 			fichier.close()
+
+	def SLS(self):
+		print("Dans SLS")
+		new_ant = copy.deepcopy(self.best_ant)
+		new_ant.SLS()
+		if(new_ant.totalWeihtedTardiness < self.best_weighted_tardiness):
+			self.best_weighted_tardiness = copy.deepcopy(new_ant.totalWeihtedTardiness)
+			self.best_ant = copy.deepcopy(new_ant)
+		print(new_ant.getSolution())
+		print(new_ant.totalWeihtedTardiness)
 
 	def readArguments(self,argv):
 		i = 1
@@ -139,7 +150,7 @@ class ACS(object):
 				dist = dueDates[i]
 				if (dist <= 0):
 					dist = 1
-				self.heuristic[i][time] = 0.0001/dist
+				self.heuristic[i][time] = 1/dist
 
 	def initializeProbabilities(self):
 		N = self.PFSPobj.getNumJobs()
@@ -172,7 +183,7 @@ class ACS(object):
 				self.pheromone[i][j] = (1-self.rho)*self.pheromone[i][j]
 
 	def addPheromone(self,job, time, delta):
-		self.pheromone[job][time] = self.pheromone[job][time] + self.rho*delta * 1000
+		self.pheromone[job][time] = self.pheromone[job][time] + self.rho*delta 
 		
 	#Deposit on the global best tour
 	def depositPheromone(self):

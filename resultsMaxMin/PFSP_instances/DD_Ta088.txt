@@ -8,3 +8,4 @@ Total weighted tardiness
 980922
 995409
 1000397
+1012796

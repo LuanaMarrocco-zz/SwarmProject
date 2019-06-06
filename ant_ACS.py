@@ -37,12 +37,21 @@ class Ant(object):
 				sumProb += self.ACS.probability[j][time]
 			else:
 				self.selectionProb[j] = 0.0
-		for j in range(self.size):
-			if(self.isAlreadySelected[j] == False):
-				self.selectionProb[j] = self.ACS.probability[j][time]/sumProb 
-		
-		nextJob = np.random.choice(self.size, p=self.selectionProb)
+		if (sumProb == 0):
+			nextJob = self.getRandomWithoutP()
+		else: 
+			for j in range(self.size):
+				if(self.isAlreadySelected[j] == False):
+					self.selectionProb[j] = self.ACS.probability[j][time]/sumProb 
+			nextJob = np.random.choice(self.size, p=self.selectionProb)
 		return nextJob
+	
+	def getRandomWithoutP(self):
+		listChoices = []
+		for i in range (self.size):
+			if(self.isAlreadySelected[i] ==  False):
+				listChoices.append(i)
+		return np.random.choice(listChoices)
 
 	#Using the state transition rule
 	def getNextJobACS(self,time):
@@ -107,6 +116,24 @@ class Ant(object):
 			self.completionTimeMatrix.append(completionTimePerMachine)
 		self.completionTime = self.completionTimeMatrix[-1]
 
+	def SLS(self):
+		indexJobToMove = 0
+		valOfJob = 0
+		weights = self.ACS.PFSPobj.getWeights()
+		for i in range(self.size):
+			val = self.tardiness[i]*weights[self.solutionSequence[i]]
+			if (val > valOfJob):
+				val = valOfJob
+				indexJobToMove = i
+		self.moveJob(indexJobToMove)
+
+	def moveJob(self, index):
+		previousJob = self.solutionSequence[index - 1]
+		job = self.solutionSequence[index]
+		self.solutionSequence[index] = previousJob
+		self.solutionSequence[index-1] = job
+		self.computeSolution()
+
 	def getJob(self,i):
 		return self.solutionSequence[i]
 
@@ -120,3 +147,7 @@ class Ant(object):
 		self.solutionSequence = [-1] * self.size
 		self.isAlreadySelected = [False] * self.size
 		self.selectionProb = [0] * self.size
+		self.completionTimeMatrix = []
+		self.completionTime = None
+		self.tardiness = [0] * self.size
+		self.totalWeihtedTardiness = 0

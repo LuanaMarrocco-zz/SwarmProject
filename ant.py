@@ -103,3 +103,7 @@ class Ant(object):
 		self.solutionSequence = [-1] * self.size
 		self.isAlreadySelected = [False] * self.size
 		self.selectionProb = [0] * self.size
+		self.completionTimeMatrix = []
+		self.completionTime = None
+		self.tardiness = [0] * self.size
+		self.totalWeihtedTardiness = 0

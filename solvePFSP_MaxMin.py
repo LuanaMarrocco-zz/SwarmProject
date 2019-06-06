@@ -5,13 +5,13 @@ import time
 
 fileName = "PFSP_instances/DD_Ta051.txt"
 resultFile = "resultsMaxMin/" +fileName
-alpha=1
-beta=3.0
-rho=0.4
+alpha=0.1
+beta=2.0
+rho=0.2
 n_ants=10
 max_iterations=10000
 seed = 0
-initial_pheromone = 1.0
+initial_pheromone = 0.0001
 PFSPobj = None
 pheromone = []
 heuristic = []
@@ -28,14 +28,14 @@ best_ant_tour = None
 
 max_pheromone = None
 min_pheromone = None
-a_min_pheromone = 1000
+a_min_pheromone = 50
 t0 = None
 
 def printHelp():
 	global initial_pheromone
 	helpString = """	ACO Usage:
 		python solePFSP_maxMin.py --ants <int> --alpha <float> --beta <float> --rho <float> --tours <int> --iterations <int> --seed <int> --instance <path>
-		Example: python solePFSP_maxMin.py --tours 2000 --seed 123 --instance DD_Ta051.txt
+		Example: python solePFSP_maxMin.py --tours 2000 --seed 123 --instance PFSP_instances/DD_Ta051.txt
 	ACO flags:
 		--ants: Number of ants to build every iteration. Default=10.
 		--alpha: Alpha parameter (float). Default=1.
@@ -111,7 +111,7 @@ def initializeHeuristic():
 			dist = dueDates[i]
 			if (dist <= 0):
 				dist = 1
-			heuristic[i][time] = 1/dist
+			heuristic[i][time] = 0.0001/dist
 
 def initializeProbabilities():
 	global PFSPobj, probability
@@ -141,8 +141,6 @@ def terminationCondition():
 		res = True
 	return res
 
-
-
 def evaporatePheromone():
 	global PFSPobj,pheromone, rho
 	N = PFSPobj.getNumJobs()
@@ -153,7 +151,7 @@ def evaporatePheromone():
 
 def addPheromone(job, time, delta):
 	global pheromone
-	pheromone[job][time] += delta * 1000000
+	pheromone[job][time] += delta *1000#*1000000
 	checkPheromoneMaxMin(job,time)
 	
 #Deposit on the global best tour
@@ -207,7 +205,7 @@ def main() :
 					if(best_weighted_tardiness_ever == None or best_weighted_tardiness_ever > colony[i].getWeightedTardiness()):
 						best_weighted_tardiness_ever = colony[i].getWeightedTardiness()
 						best_ant_ever = colony[i]
-						max_pheromone = 1.0/(best_weighted_tardiness_ever*rho)*100000
+						max_pheromone = 1.0/(best_weighted_tardiness_ever*rho) *1000#*100000
 						min_pheromone = max_pheromone/a_min_pheromone
 						print("Best found: ", best_weighted_tardiness_ever)
 						print(best_ant_ever.getSolution())

@@ -4,19 +4,21 @@ from xlutils.copy import copy
 import statistics
 
 def main():
-	line = int(sys.argv[3]) + 1
+	line = int(sys.argv[3])
 	folder = ""
 	if(sys.argv[1] == "MaxMin"):
 		folder = "resultsMaxMin/PFSP_instances/"
-		fileName = folder + sys.argv[2]
+		fileName = folder + sys.argv[2][17:]
+		sheetNumber = 0
 	elif(sys.argv[1] == "ACS"):
 		folder = "resultsACS/PFSP_instances/"
-		fileName = folder + sys.argv[2]
+		fileName = folder + sys.argv[2][17:]
+		sheetNumber = 1
 	
-	xlsFile = folder +"All.xls"
+	xlsFile = "AllResults.xls"
 	workbook = xlrd.open_workbook(xlsFile)
 	workbook = copy(workbook)
-	worksheet = workbook.get_sheet(0)
+	worksheet = workbook.get_sheet(sheetNumber)
 	
 	#To DO
 	column = 0
