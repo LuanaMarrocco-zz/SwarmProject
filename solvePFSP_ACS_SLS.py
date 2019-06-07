@@ -23,7 +23,7 @@ class ACS(object):
 		self.q0 = 0.5
 		self.iterations = 0
 		self.countSLS = 0
-		self.runs = 5
+		self.runs = 1
 
 		self.readArguments(argv)
 		self.PFSPobj = PFSP(self.fileName)
@@ -54,7 +54,7 @@ class ACS(object):
 				self.calculateProbability()
 				#print("Voici la best iteration: ",best_weighted_tardiness)
 				self.iterations += 1
-			#self.SLS()
+			self.SLS()
 			print("Voici la best: ",self.best_weighted_tardiness)
 			print(self.best_ant.getWeightedTardiness())
 			fichier = open(self.resultFile, "a")

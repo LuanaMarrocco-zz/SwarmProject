@@ -23,7 +23,7 @@ class ACS(object):
 		self.q0 = 0.9
 		self.iterations = 0
 		self.countSLS = 0
-		self.runs = 5
+		self.runs = 10
 
 		self.readArguments(argv)
 		self.PFSPobj = PFSP(self.fileName)

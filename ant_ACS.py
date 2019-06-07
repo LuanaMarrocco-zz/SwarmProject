@@ -120,12 +120,15 @@ class Ant(object):
 		indexJobToMove = 0
 		valOfJob = 0
 		weights = self.ACS.PFSPobj.getWeights()
+		ls = []
 		for i in range(self.size):
 			val = self.tardiness[i]*weights[self.solutionSequence[i]]
+			ls.append(vel)
 			if (val > valOfJob):
 				val = valOfJob
 				indexJobToMove = i
-		self.moveJob(indexJobToMove)
+		print(ls)
+		#self.moveJob(indexJobToMove)
 
 	def moveJob(self, index):
 		previousJob = self.solutionSequence[index - 1]

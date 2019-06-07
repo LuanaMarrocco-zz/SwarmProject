@@ -4,7 +4,7 @@ from ant import Ant
 import time
 import copy
 
-fileName = "PFSP_instances/DD_Ta051.txt"
+fileName = "PFSP_instances/DD_Ta052.txt"
 resultFile = "resultsMaxMin/" +fileName
 alpha=2.0
 beta=3.0
