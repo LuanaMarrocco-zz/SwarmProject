@@ -1,5 +1,6 @@
 import random
 import numpy as np
+import copy
 
 class Ant(object):
 
@@ -117,25 +118,32 @@ class Ant(object):
 		self.completionTime = self.completionTimeMatrix[-1]
 
 	def SLS(self):
-		indexJobToMove = 0
-		valOfJob = 0
-		weights = self.ACS.PFSPobj.getWeights()
-		ls = []
-		for i in range(self.size):
-			val = self.tardiness[i]*weights[self.solutionSequence[i]]
-			ls.append(vel)
-			if (val > valOfJob):
-				val = valOfJob
-				indexJobToMove = i
-		print(ls)
-		#self.moveJob(indexJobToMove)
+		previousSol = -1
+		while(previousSol != self.totalWeihtedTardiness):
+			previousSol = self.totalWeihtedTardiness
+			indexJobToMove = np.random.choice(self.size)
+			self.moveJob(indexJobToMove)
 
 	def moveJob(self, index):
-		previousJob = self.solutionSequence[index - 1]
+		#Storage of the previous solution
+		previousSol = copy.copy(self.solutionSequence)
+		previousTardi = self.totalWeihtedTardiness
+		
+		#Perumation and calculation of the new sol
+		previousIndex = np.random.choice(self.size)#previousIndex = (index - 1)%self.size
+		while(index == previousIndex):
+			previousIndex = np.random.choice(self.size)
+
+		previousJob = self.solutionSequence[previousIndex]
 		job = self.solutionSequence[index]
 		self.solutionSequence[index] = previousJob
-		self.solutionSequence[index-1] = job
+		self.solutionSequence[previousIndex] = job
 		self.computeSolution()
+		#Keeping the best
+		if(previousTardi < self.totalWeihtedTardiness):
+			self.solutionSequence = copy.copy(previousSol)
+			self.totalWeihtedTardiness = previousTardi
+		
 
 	def getJob(self,i):
 		return self.solutionSequence[i]

@@ -14,6 +14,13 @@ def main():
 		folder = "resultsACS/PFSP_instances/"
 		fileName = folder + sys.argv[2][17:]
 		sheetNumber = 1
+	elif(sys.argv[1] == "ACSSLS"):
+		folder = "resultsACSSLS/PFSP_instances/"
+		fileName = folder + sys.argv[2][17:]
+		sheetNumber = 2
+	else:
+		print("Problem in writeData.py")
+		print("The argument is not the good one -  Choice between MaxMin, ACS or ACSSLS")
 	
 	xlsFile = "AllResults.xls"
 	workbook = xlrd.open_workbook(xlsFile)
